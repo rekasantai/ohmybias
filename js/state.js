@@ -4,6 +4,7 @@ const DEFAULT_PROGRESS = {
   completedEpisodes: {},
   muted: false,
   seenIntro: false,
+  theme: 'light',
 };
 
 export function clampMeter(value) {
@@ -20,6 +21,7 @@ export function loadProgress() {
       completedEpisodes: parsed.completedEpisodes || {},
       muted: Boolean(parsed.muted),
       seenIntro: Boolean(parsed.seenIntro),
+      theme: parsed.theme === 'dark' ? 'dark' : 'light',
     };
   } catch {
     return { ...DEFAULT_PROGRESS, completedEpisodes: {} };
@@ -34,8 +36,15 @@ export function saveProgress(progress) {
   }
 }
 
-export function resetProgress() {
-  const fresh = { ...DEFAULT_PROGRESS, completedEpisodes: {}, seenIntro: true };
+export function resetProgress(current) {
+  const base = current || loadProgress();
+  const fresh = {
+    ...DEFAULT_PROGRESS,
+    completedEpisodes: {},
+    seenIntro: true,
+    muted: Boolean(base.muted),
+    theme: base.theme === 'dark' ? 'dark' : 'light',
+  };
   saveProgress(fresh);
   return fresh;
 }

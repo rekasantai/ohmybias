@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#16233f" id="metaThemeColor" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="author" content="RekaSantai" />
   <title>Oh My Bias! — Sarawak Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles/tokens.css" />
   <link rel="stylesheet" href="./styles/main.css" />
   <link rel="stylesheet" href="./styles/components.css" />
@@ -13,47 +19,55 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="topbar-brand" id="brandHome" role="button" tabindex="0" aria-label="Return to home">
-        <span id="topbarLogo"></span>
-        <span>Oh My Bias!</span>
+        <span class="topbar-logo" id="topbarLogo"></span>
+        <span class="topbar-title-group">
+          <span class="topbar-title">Oh My Bias!</span>
+          <span class="topbar-tag">Sarawak</span>
+        </span>
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" id="btnHelp" type="button" aria-label="How to play">❓</button>
-        <button class="icon-btn" id="btnKamus" type="button">📖 Kamus</button>
-        <button class="icon-btn" id="btnMute" type="button" aria-label="Toggle sound">🔊</button>
+        <button class="icon-btn icon-only" id="btnTheme" type="button" aria-label="Toggle dark theme"></button>
+        <button class="icon-btn icon-only" id="btnHelp" type="button" aria-label="How to play"></button>
+        <button class="icon-btn" id="btnKamus" type="button" aria-label="Open Kamus glossary"></button>
+        <button class="icon-btn icon-only" id="btnMute" type="button" aria-label="Toggle sound"></button>
       </div>
     </header>
 
     <main class="main-stage" id="mainStage" aria-live="polite"></main>
 
-    <footer style="text-align:center; padding:8px 16px 14px; font-size:0.74rem; color:var(--text-secondary); border-top:1px solid var(--border-warm); background:var(--surface-parchment);">
+    <footer class="app-footer">
       Made with ❤️ by <strong>RekaSantai</strong> in Sarawak
     </footer>
+
+    <div class="toast-host" id="toastHost" aria-live="polite"></div>
   </div>
 
   <!-- Kamus (Glossary) Modal -->
   <div class="modal-backdrop hidden" id="kamusModal" role="dialog" aria-modal="true" aria-labelledby="kamusTitle">
-    <div class="modal-sheet animate-in">
+    <div class="modal-sheet">
+      <div class="sheet-handle" aria-hidden="true"></div>
       <div class="modal-header">
-        <h2 id="kamusTitle">📖 Kamus Bias &amp; Sarawak</h2>
-        <button class="icon-btn" id="btnCloseKamus" type="button" style="color: var(--bg-indigo); border-color: var(--border-warm);">✕ Close</button>
+        <h2 id="kamusTitle" class="modal-title-row"></h2>
+        <button class="icon-btn sheet-close-btn" id="btnCloseKamus" type="button" aria-label="Close Kamus"></button>
       </div>
       <div class="kamus-tabs" id="kamusTabs">
         <button class="kamus-tab active" data-tab="biases" type="button">Biases</button>
         <button class="kamus-tab" data-tab="wicked" type="button">Wicked Solving</button>
         <button class="kamus-tab" data-tab="sarawak" type="button">Sarawak</button>
       </div>
-      <div id="kamusContent" style="display:flex; flex-direction:column; gap:8px;"></div>
+      <div id="kamusContent" class="kamus-content"></div>
     </div>
   </div>
 
   <!-- Welcome / How to Play Modal -->
   <div class="modal-backdrop hidden" id="introModal" role="dialog" aria-modal="true" aria-labelledby="introTitle">
-    <div class="modal-sheet animate-in">
+    <div class="modal-sheet">
+      <div class="sheet-handle" aria-hidden="true"></div>
       <div class="modal-header">
-        <h2 id="introTitle">🦅 Selamat Datang!</h2>
-        <button class="icon-btn" id="btnCloseIntro" type="button" style="color: var(--bg-indigo); border-color: var(--border-warm);">✕</button>
+        <h2 id="introTitle" class="modal-title-row"></h2>
+        <button class="icon-btn sheet-close-btn" id="btnCloseIntro" type="button" aria-label="Close welcome guide"></button>
       </div>
-      <p style="font-size:0.88rem; color:var(--text-secondary);">
+      <p class="modal-lead">
         You are a <strong>Ruai Facilitator</strong> in Sarawak. Guide diverse teams past hidden <strong>cognitive biases</strong> using <strong>Wicked Problem Solving</strong>.
       </p>
       <div class="intro-steps">
@@ -63,11 +77,11 @@
         </div>
         <div class="intro-step">
           <span class="intro-num">2</span>
-          <div><strong>Spot the Bias Trap 🔍</strong><br/><span>Catch Anchoring, Groupthink, or Sunk Cost before rushing.</span></div>
+          <div><strong>Spot the Bias Trap</strong><br/><span>Catch Anchoring, Groupthink, or Sunk Cost before rushing.</span></div>
         </div>
         <div class="intro-step">
           <span class="intro-num">3</span>
-          <div><strong>Tame &amp; Align 🛠️🤝</strong><br/><span>Use safe-to-fail probes to boost <strong>Align</strong>, <strong>Trust</strong> &amp; <strong>Impact</strong>.</span></div>
+          <div><strong>Tame &amp; Align</strong><br/><span>Use safe-to-fail probes to boost <strong>Align</strong>, <strong>Trust</strong> &amp; <strong>Impact</strong>.</span></div>
         </div>
       </div>
       <button class="btn-primary" id="btnStartFromIntro" type="button">Let’s Play →</button>

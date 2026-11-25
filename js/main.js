@@ -2,34 +2,60 @@ import { EPISODES } from './data/episodes.js';
 import { GLOSSARY } from './data/glossary.js';
 import { loadProgress, saveProgress, resetProgress, clampMeter, getFacilitatorRank } from './state.js';
 import { playSfx } from './audio.js';
-import { hornbillSvg, puaDividerSvg, avatarSvg, episodeSceneSvg, tensionRingSvg, biasBadgeSvg } from './svg-art.js';
+import {
+  uiIconSvg,
+  hornbillSvg,
+  puaDividerSvg,
+  avatarSvg,
+  episodeSceneSvg,
+  tensionRingSvg,
+  biasBadgeSvg,
+  scoreRingSvg,
+  biasRadarSvg,
+  episodeEmblemSvg,
+} from './svg-art.js';
 
 const mainStage = document.getElementById('mainStage');
 const topbarLogo = document.getElementById('topbarLogo');
 const brandHome = document.getElementById('brandHome');
+const btnTheme = document.getElementById('btnTheme');
 const btnMute = document.getElementById('btnMute');
 const btnHelp = document.getElementById('btnHelp');
 const btnKamus = document.getElementById('btnKamus');
 const btnCloseKamus = document.getElementById('btnCloseKamus');
+const kamusTitle = document.getElementById('kamusTitle');
 const kamusModal = document.getElementById('kamusModal');
 const kamusTabs = document.getElementById('kamusTabs');
 const kamusContent = document.getElementById('kamusContent');
 const introModal = document.getElementById('introModal');
+const introTitle = document.getElementById('introTitle');
 const btnCloseIntro = document.getElementById('btnCloseIntro');
 const btnStartFromIntro = document.getElementById('btnStartFromIntro');
+const toastHost = document.getElementById('toastHost');
+const metaThemeColor = document.getElementById('metaThemeColor');
 
 let progress = loadProgress();
 let activeKamusTab = 'biases';
 let session = null;
+let toastTimer = null;
 
 function init() {
-  topbarLogo.innerHTML = hornbillSvg(28);
+  topbarLogo.innerHTML = hornbillSvg(30, 'neutral');
+  btnHelp.innerHTML = uiIconSvg('help', 18);
+  btnKamus.innerHTML = `${uiIconSvg('book', 16)}<span>Kamus</span>`;
+  btnCloseKamus.innerHTML = uiIconSvg('close', 18);
+  btnCloseIntro.innerHTML = uiIconSvg('close', 18);
+  kamusTitle.innerHTML = `${uiIconSvg('book', 20)}<span>Kamus Bias &amp; Sarawak</span>`;
+  introTitle.innerHTML = `${hornbillSvg(28, 'celebrate')}<span>Selamat Datang!</span>`;
+
+  applyTheme(progress.theme);
   syncMuteButton();
 
   brandHome.addEventListener('click', () => {
     playSfx('tap', progress.muted);
     session = null;
     renderHome();
+    scrollStageTop();
   });
 
   brandHome.addEventListener('keydown', (e) => {
@@ -37,7 +63,16 @@ function init() {
       e.preventDefault();
       session = null;
       renderHome();
+      scrollStageTop();
     }
+  });
+
+  btnTheme.addEventListener('click', () => {
+    progress.theme = progress.theme === 'dark' ? 'light' : 'dark';
+    saveProgress(progress);
+    applyTheme(progress.theme);
+    playSfx('tap', progress.muted);
+    showToast(progress.theme === 'dark' ? 'Ruai Night theme enabled' : 'Pua Parchment theme enabled');
   });
 
   btnMute.addEventListener('click', () => {
@@ -91,12 +126,44 @@ function init() {
     renderKamus();
   });
 
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (!kamusModal.classList.contains('hidden')) {
+      kamusModal.classList.add('hidden');
+    } else if (!introModal.classList.contains('hidden')) {
+      dismissIntro();
+    }
+  });
+
   renderHome();
 }
 
+function applyTheme(theme) {
+  const mode = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = mode;
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', mode === 'dark' ? '#0b1220' : '#16233f');
+  }
+  btnTheme.innerHTML = uiIconSvg(mode === 'dark' ? 'sun' : 'moon', 18);
+  btnTheme.setAttribute('aria-label', mode === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+}
+
 function syncMuteButton() {
-  btnMute.textContent = progress.muted ? '🔇' : '🔊';
+  btnMute.innerHTML = uiIconSvg(progress.muted ? 'volumeOff' : 'volumeOn', 18);
   btnMute.setAttribute('aria-label', progress.muted ? 'Unmute sound' : 'Mute sound');
+}
+
+function scrollStageTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showToast(message) {
+  if (!toastHost) return;
+  if (toastTimer) clearTimeout(toastTimer);
+  toastHost.innerHTML = `<div class="toast">${uiIconSvg('check', 15)}<span>${message}</span></div>`;
+  toastTimer = setTimeout(() => {
+    toastHost.innerHTML = '';
+  }, 2400);
 }
 
 function openKamus() {
@@ -120,43 +187,89 @@ function renderKamus() {
     .join('');
 }
 
+function classifyChip(text = '') {
+  const t = String(text);
+  if (
+    t.includes('+') ||
+    t.includes('Low Risk') ||
+    t.includes('Safe') ||
+    t.includes('Balanced') ||
+    t.includes('Fast Learn') ||
+    t.includes('Inclusive') ||
+    t.includes('Practical') ||
+    t.includes('Basin-Wide') ||
+    t.includes('3G Reality') ||
+    t.includes('High Impact')
+  ) {
+    return 'chip-pos';
+  }
+  if (
+    t.includes('⚠️') ||
+    t.includes('💥') ||
+    t.includes('💔') ||
+    t.includes('-Trust') ||
+    t.includes('High Risk') ||
+    t.includes('Pushback') ||
+    t.includes('Flood') ||
+    t.includes('Waste') ||
+    t.includes('Fake') ||
+    t.includes('Divide') ||
+    t.includes('Dropoff') ||
+    t.includes('Stalled')
+  ) {
+    return 'chip-warn';
+  }
+  return '';
+}
+
 function renderHome() {
   const rank = getFacilitatorRank(progress.completedEpisodes);
   const completedCount = Object.keys(progress.completedEpisodes).length;
+  const pct = Math.round((completedCount / EPISODES.length) * 100);
   const nextEp = EPISODES.find((ep) => !progress.completedEpisodes[ep.id]) || EPISODES[0];
 
   mainStage.innerHTML = `
     <section class="hero-card animate-in">
       <div class="hero-top">
-        <div class="hero-mascot">${hornbillSvg(56)}</div>
+        <div class="hero-mascot">${hornbillSvg(58, completedCount === EPISODES.length ? 'celebrate' : 'neutral')}</div>
         <div>
           <h1 class="hero-title">Oh My Bias!</h1>
           <p class="hero-subtitle">Sarawak Edition • Tame bias &amp; align teams.</p>
         </div>
       </div>
-      <div class="rank-pill">${rank.badge} ${rank.title} (${completedCount}/5)</div>
+      <div class="hero-rank-row">
+        <div class="rank-pill">${rank.badge} ${rank.title}</div>
+        <div class="campaign-progress">
+          <div class="campaign-track" aria-label="Campaign completion">
+            <div class="campaign-fill" style="width:${pct}%"></div>
+          </div>
+          <span class="campaign-count tnum">${completedCount}/${EPISODES.length}</span>
+        </div>
+      </div>
     </section>
 
     <div class="badge-strip" aria-label="Collected Terabai Bias Badges">
       ${EPISODES.map((ep) => {
-        const unlocked = Boolean(progress.completedEpisodes[ep.id]);
+        const done = progress.completedEpisodes[ep.id];
+        const unlocked = Boolean(done);
         return `
-        <div class="badge-slot">
-          ${biasBadgeSvg(ep.number, unlocked)}
+        <button class="badge-slot ${unlocked ? 'unlocked' : ''}" data-badge-ep="${ep.id}" type="button" aria-label="${ep.badgeName} badge">
+          ${biasBadgeSvg(ep.number, unlocked, 40)}
           <span>Ep ${ep.number}</span>
-        </div>`;
+        </button>`;
       }).join('')}
     </div>
 
     ${puaDividerSvg()}
 
     <button class="btn-primary" id="btnQuickPlay" type="button">
-      ${completedCount === 0 ? '▶ Start Episode 1 (4 min)' : `▶ Play Next: Ep ${nextEp.number} — ${nextEp.location}`}
+      ${uiIconSvg('play', 16)}
+      <span>${completedCount === 0 ? 'Start Episode 1 (4 min)' : `Play Next: Ep ${nextEp.number} — ${nextEp.location}`}</span>
     </button>
 
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <span class="eyebrow">Sarawak Campaign</span>
-      ${completedCount > 0 ? '<button class="icon-btn" id="btnReset" type="button" style="color:var(--accent-terracotta); border-color:var(--border-warm); background:var(--surface-card);">Reset</button>' : ''}
+    <div class="section-head-row">
+      <span class="eyebrow">${uiIconSvg('compass', 14)} Sarawak Campaign</span>
+      ${completedCount > 0 ? `<button class="icon-btn btn-reset-pill" id="btnReset" type="button">${uiIconSvg('reset', 14)}<span>Reset</span></button>` : ''}
     </div>
 
     <div class="episode-list">
@@ -164,12 +277,13 @@ function renderHome() {
         const done = progress.completedEpisodes[ep.id];
         return `
         <button class="episode-card ${done ? 'completed' : ''}" data-ep="${ep.id}" type="button">
+          <span class="episode-emblem">${episodeEmblemSvg(ep.number)}</span>
           <div class="episode-meta">
             <span class="episode-tag">Ep ${ep.number} • ${ep.location}</span>
             <span class="episode-name">${ep.title}</span>
-            <span class="episode-bias">🎯 ${ep.biasFocus}</span>
+            <span class="episode-bias">${uiIconSvg('target', 13)}<span>${ep.biasFocus}</span></span>
           </div>
-          <span class="episode-badge">${done ? `✓ ${done.score}%` : 'Play →'}</span>
+          <span class="episode-badge tnum">${done ? `✓ ${done.score}%` : 'Play →'}</span>
         </button>`;
       }).join('')}
     </div>
@@ -183,11 +297,22 @@ function renderHome() {
   const btnReset = document.getElementById('btnReset');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
-      progress = resetProgress();
+      progress = resetProgress(progress);
       playSfx('trap', progress.muted);
+      showToast('Campaign progress reset');
       renderHome();
     });
   }
+
+  mainStage.querySelectorAll('[data-badge-ep]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const ep = EPISODES.find((e) => e.id === btn.dataset.badgeEp);
+      if (!ep) return;
+      const done = progress.completedEpisodes[ep.id];
+      playSfx('tap', progress.muted);
+      showToast(done ? `${ep.badgeName} • Best score ${done.score}%` : `Complete Ep ${ep.number} to unlock "${ep.badgeName}"`);
+    });
+  });
 
   mainStage.querySelectorAll('[data-ep]').forEach((card) => {
     card.addEventListener('click', () => {
@@ -205,31 +330,77 @@ function startEpisode(epId) {
     episode,
     phase: 'briefing',
     speakerIdx: 0,
+    visitedSpeakers: [0],
     meters: { alignment: 50, trust: 50, impact: 50 },
+    prevMeters: { alignment: 50, trust: 50, impact: 50 },
+    lastDelta: null,
+    lastChoiceTitle: '',
     feedback: null,
     biasSpotted: false,
     sceneResolved: false,
     teamAligned: false,
   };
   renderEpisode();
+  scrollStageTop();
 }
 
-function renderMetersHtml(meters) {
+function formatDeltaBadge(deltaVal) {
+  if (!deltaVal) return '';
+  const sign = deltaVal > 0 ? '+' : '';
+  const cls = deltaVal > 0 ? 'delta-pos' : 'delta-neg';
+  return `<span class="delta-pill ${cls} tnum">${sign}${deltaVal}</span>`;
+}
+
+function renderMetersHtml(meters, prevMeters, lastDelta) {
+  const startMeters = lastDelta && prevMeters ? prevMeters : meters;
+  const rows = [
+    { key: 'alignment', label: 'Align', icon: 'align', cls: 'alignment' },
+    { key: 'trust', label: 'Trust', icon: 'trust', cls: 'trust' },
+    { key: 'impact', label: 'Impact', icon: 'impact', cls: 'impact' },
+  ];
+
   return `
   <div class="meters-bar" aria-label="Team Compass Meters">
-    <div class="meter-item">
-      <div class="meter-label"><span>🤝 Align</span><span>${meters.alignment}%</span></div>
-      <div class="meter-track"><div class="meter-fill alignment" style="width:${meters.alignment}%"></div></div>
-    </div>
-    <div class="meter-item">
-      <div class="meter-label"><span>🌿 Trust</span><span>${meters.trust}%</span></div>
-      <div class="meter-track"><div class="meter-fill trust" style="width:${meters.trust}%"></div></div>
-    </div>
-    <div class="meter-item">
-      <div class="meter-label"><span>⚡ Impact</span><span>${meters.impact}%</span></div>
-      <div class="meter-track"><div class="meter-fill impact" style="width:${meters.impact}%"></div></div>
-    </div>
+    ${rows
+      .map(
+        (r) => `
+      <div class="meter-item">
+        <div class="meter-label">
+          <span class="meter-name">${uiIconSvg(r.icon, 13)}<span>${r.label}</span></span>
+          <span class="meter-val-group tnum">
+            ${lastDelta ? formatDeltaBadge(lastDelta[r.key] || 0) : ''}
+            <span>${meters[r.key]}%</span>
+          </span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill ${r.cls}" data-target-width="${meters[r.key]}" style="width:${startMeters[r.key]}%"></div>
+        </div>
+      </div>`
+      )
+      .join('')}
   </div>`;
+}
+
+function animateMeters() {
+  const fills = mainStage.querySelectorAll('.meter-fill[data-target-width]');
+  if (!fills.length) return;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      fills.forEach((el) => {
+        el.style.width = `${el.dataset.targetWidth}%`;
+      });
+    });
+  });
+}
+
+function animateScoreRing() {
+  const arc = mainStage.querySelector('.score-ring-arc[data-target-offset]');
+  if (!arc) return;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      arc.style.strokeDashoffset = arc.dataset.targetOffset;
+    });
+  });
 }
 
 function renderPhasePills(currentPhase) {
@@ -257,19 +428,31 @@ function renderSceneStage(episode, resolved) {
   <div class="scene-stage">
     ${episodeSceneSvg(episode.id, resolved)}
     <div class="scene-caption">
-      <span>📍 ${episode.location}</span>
-      <span>${resolved ? '✨ Resolved' : '⚠️ Tension'}</span>
+      <span class="scene-caption-item">${uiIconSvg('pin', 14)}<span>${episode.location}</span></span>
+      <span class="scene-status-pill ${resolved ? 'resolved' : 'tense'}">
+        ${uiIconSvg(resolved ? 'sparkle' : 'alert', 13)}
+        <span>${resolved ? 'Resolved' : 'Tension'}</span>
+      </span>
     </div>
   </div>`;
 }
 
+function selectSpeaker(idx) {
+  session.speakerIdx = idx;
+  if (!session.visitedSpeakers.includes(idx)) {
+    session.visitedSpeakers.push(idx);
+  }
+  renderEpisode();
+}
+
 function renderEpisode() {
-  const { episode, phase, meters, feedback, speakerIdx, sceneResolved, teamAligned } = session;
+  const { episode, phase, meters, prevMeters, lastDelta, feedback, speakerIdx, sceneResolved, teamAligned } = session;
 
   if (phase === 'briefing') {
     const speakers = episode.briefing.stakeholders;
     const sp = speakers[speakerIdx];
     const isLastSpeaker = speakerIdx === speakers.length - 1;
+    const allHeard = session.visitedSpeakers.length >= speakers.length;
 
     mainStage.innerHTML = `
       ${renderPhasePills(phase)}
@@ -277,66 +460,127 @@ function renderEpisode() {
 
       <div class="story-card animate-in">
         <span class="eyebrow">Ep ${episode.number} • ${episode.title}</span>
-        <p style="font-size:0.86rem;">${episode.briefing.setup}</p>
+        <p>${episode.briefing.setup}</p>
       </div>
 
-      <div class="comic-bubble-card animate-in">
+      <div class="comic-bubble-card animate-in" id="huddleCard">
+        <div class="cast-bar" role="tablist" aria-label="Huddle Stakeholders">
+          ${speakers
+            .map((member, idx) => {
+              const active = idx === speakerIdx;
+              const heard = session.visitedSpeakers.includes(idx);
+              return `
+              <button class="cast-pill ${active ? 'active' : ''} ${heard ? 'heard' : ''}" data-speaker-idx="${idx}" type="button" role="tab" aria-selected="${active}">
+                ${heard ? `<span class="cast-heard-mark" aria-hidden="true">${uiIconSvg('check', 10)}</span>` : ''}
+                <div class="stakeholder-avatar">${avatarSvg(member.avatar, member.mood)}</div>
+                <span class="cast-pill-name">${member.name.split(' ')[0]}</span>
+              </button>`;
+            })
+            .join('')}
+        </div>
+
         <div class="speaker-header">
           <div class="speaker-id">
-            <div class="stakeholder-avatar">${avatarSvg(sp.avatar)}</div>
+            <div class="stakeholder-avatar">${avatarSvg(sp.avatar, sp.mood)}</div>
             <div>
-              <div style="font-size:0.86rem; font-weight:800; color:var(--bg-indigo);">${sp.name}</div>
-              <div style="font-size:0.72rem; font-weight:700; color:var(--accent-terracotta);">${sp.role}</div>
+              <div class="speaker-name">${sp.name}</div>
+              <div class="speaker-role">${sp.role}</div>
             </div>
           </div>
           <span class="mood-chip">${sp.mood}</span>
         </div>
 
-        <div class="speech-bubble">“${sp.quote}”</div>
+        <div class="speech-bubble" data-tail="${speakerIdx}">“${sp.quote}”</div>
 
         <div class="speaker-nav">
-          <button class="icon-btn" id="btnPrevSpeaker" type="button" ${speakerIdx === 0 ? 'disabled style="opacity:0.4; color:var(--bg-indigo); border-color:var(--border-warm);"' : 'style="color:var(--bg-indigo); border-color:var(--border-warm);"'}>← Prev</button>
-          <div class="speaker-dots">
+          <button class="icon-btn icon-btn-surface" id="btnPrevSpeaker" type="button" ${speakerIdx === 0 ? 'disabled style="opacity:0.42;"' : ''}>
+            ${uiIconSvg('chevronLeft', 15)}<span>Prev</span>
+          </button>
+          <div class="speaker-dots" aria-hidden="true">
             ${speakers.map((_, i) => `<span class="speaker-dot ${i === speakerIdx ? 'active' : ''}"></span>`).join('')}
           </div>
-          <button class="icon-btn" id="btnNextSpeaker" type="button" style="color:var(--bg-indigo); border-color:var(--border-warm);">${isLastSpeaker ? '3 / 3' : 'Next →'}</button>
+          <button class="icon-btn icon-btn-surface" id="btnNextSpeaker" type="button">
+            <span>${isLastSpeaker ? `${speakerIdx + 1} / ${speakers.length}` : 'Next'}</span>${isLastSpeaker ? '' : uiIconSvg('chevronRight', 15)}
+          </button>
         </div>
       </div>
 
       <div class="choices-stack">
         <button class="btn-primary" id="btnToBias" type="button">
-          ${isLastSpeaker ? 'Activate Bias Radar →' : `Next Speaker (${speakerIdx + 1}/${speakers.length}) →`}
+          ${uiIconSvg(isLastSpeaker || allHeard ? 'radar' : 'chevronRight', 17)}
+          <span>${isLastSpeaker || allHeard ? 'Activate Bias Radar →' : `Next Speaker (${speakerIdx + 1}/${speakers.length}) →`}</span>
         </button>
       </div>
     `;
 
+    mainStage.querySelectorAll('[data-speaker-idx]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = Number(btn.dataset.speakerIdx);
+        if (idx === session.speakerIdx) return;
+        playSfx('tap', progress.muted);
+        selectSpeaker(idx);
+      });
+    });
+
     document.getElementById('btnPrevSpeaker').addEventListener('click', () => {
       if (session.speakerIdx > 0) {
         playSfx('tap', progress.muted);
-        session.speakerIdx -= 1;
-        renderEpisode();
+        selectSpeaker(session.speakerIdx - 1);
       }
     });
 
     document.getElementById('btnNextSpeaker').addEventListener('click', () => {
       playSfx('tap', progress.muted);
       if (session.speakerIdx < speakers.length - 1) {
-        session.speakerIdx += 1;
+        selectSpeaker(session.speakerIdx + 1);
       } else {
         session.phase = 'biasRadar';
+        renderEpisode();
+        scrollStageTop();
       }
-      renderEpisode();
     });
 
     document.getElementById('btnToBias').addEventListener('click', () => {
       playSfx('tap', progress.muted);
-      if (!isLastSpeaker) {
-        session.speakerIdx += 1;
+      if (!isLastSpeaker && !allHeard) {
+        selectSpeaker(session.speakerIdx + 1);
       } else {
         session.phase = 'biasRadar';
+        renderEpisode();
+        scrollStageTop();
       }
-      renderEpisode();
     });
+
+    // Touch swipe support between speakers on phones
+    const huddleCard = document.getElementById('huddleCard');
+    let touchStartX = 0;
+    let touchStartY = 0;
+    huddleCard.addEventListener(
+      'touchstart',
+      (e) => {
+        if (!e.touches.length) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      },
+      { passive: true }
+    );
+    huddleCard.addEventListener(
+      'touchend',
+      (e) => {
+        if (!e.changedTouches.length) return;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) < 48 || Math.abs(dx) <= Math.abs(dy)) return;
+        if (dx < 0 && session.speakerIdx < speakers.length - 1) {
+          playSfx('tap', progress.muted);
+          selectSpeaker(session.speakerIdx + 1);
+        } else if (dx > 0 && session.speakerIdx > 0) {
+          playSfx('tap', progress.muted);
+          selectSpeaker(session.speakerIdx - 1);
+        }
+      },
+      { passive: true }
+    );
     return;
   }
 
@@ -354,41 +598,48 @@ function renderEpisode() {
     const nextEp = EPISODES.find((e) => e.number === episode.number + 1);
     mainStage.innerHTML = `
       ${renderSceneStage(episode, sceneResolved)}
-      ${renderMetersHtml(meters)}
+      ${renderMetersHtml(meters, prevMeters, null)}
 
       <div class="debrief-box animate-in">
-        <div class="debrief-badge-row">
-          ${biasBadgeSvg(episode.number, true)}
-          <div>
-            <span class="eyebrow" style="color:var(--accent-gold);">Badge Unlocked: ${episode.badgeName}</span>
-            <h2 style="font-size:1.1rem; color:var(--text-light);">${episode.title} (${score}%)</h2>
+        <div class="debrief-hero-row">
+          ${scoreRingSvg(score)}
+          <div class="debrief-badge-meta">
+            <div class="debrief-badge-chip">
+              ${biasBadgeSvg(episode.number, true, 40)}
+              <span class="debrief-badge-title">Badge: ${episode.badgeName}</span>
+            </div>
+            <h2 class="debrief-ep-title">${episode.title}</h2>
           </div>
         </div>
         <div class="debrief-takeaway">
-          <strong>🎯 ${episode.biasFocus}:</strong> ${episode.debrief.biasSummary}
+          <strong>${episode.biasFocus}:</strong> ${episode.debrief.biasSummary}
         </div>
         <div class="debrief-takeaway">
-          <strong>🧭 ${episode.wickedPrinciple}:</strong> ${episode.debrief.wickedTakeaway}
+          <strong>${episode.wickedPrinciple}:</strong> ${episode.debrief.wickedTakeaway}
         </div>
-        <div class="debrief-takeaway" style="border-left:3px solid var(--accent-gold);">
-          <strong>💡 Golden Rule:</strong> ${episode.debrief.teamTip}
+        <div class="debrief-takeaway golden">
+          <strong>Golden Rule:</strong> ${episode.debrief.teamTip}
         </div>
       </div>
 
       <div class="choices-stack">
-        <button class="btn-secondary" id="btnCopySummary" type="button">📋 Copy Result Card</button>
-        ${nextEp ? `<button class="btn-primary" id="btnNextEp" type="button">Next: Ep ${nextEp.number} — ${nextEp.location} →</button>` : ''}
+        <button class="btn-secondary" id="btnCopySummary" type="button">
+          ${uiIconSvg('copy', 16)}<span>Copy Result Card</span>
+        </button>
+        ${nextEp ? `<button class="btn-primary" id="btnNextEp" type="button"><span>Next: Ep ${nextEp.number} — ${nextEp.location} →</span></button>` : ''}
         <button class="btn-secondary" id="btnBackHome" type="button">Return to Ruai Hub</button>
       </div>
     `;
+
+    animateScoreRing();
 
     document.getElementById('btnCopySummary').addEventListener('click', async () => {
       const text = `Oh My Bias! Sarawak — Ep ${episode.number}: ${episode.title}\nBadge: ${episode.badgeName} | Score: ${score}%\nAlign ${meters.alignment}% • Trust ${meters.trust}% • Impact ${meters.impact}%`;
       try {
         await navigator.clipboard.writeText(text);
-        document.getElementById('btnCopySummary').textContent = '✓ Copied to Clipboard!';
+        showToast('Result card copied to clipboard!');
       } catch {
-        document.getElementById('btnCopySummary').textContent = 'Score Saved Locally ✓';
+        showToast('Score saved locally!');
       }
       playSfx('sape', progress.muted);
     });
@@ -405,6 +656,7 @@ function renderEpisode() {
       playSfx('tap', progress.muted);
       session = null;
       renderHome();
+      scrollStageTop();
     });
     return;
   }
@@ -418,16 +670,24 @@ function renderEpisode() {
         ? 'Move to Team Alignment →'
         : 'View Ruai Debrief →';
 
+  const phaseEyebrow =
+    phase === 'biasRadar'
+      ? `${uiIconSvg('radar', 14)}<span>Bias Radar</span>`
+      : phase === 'wickedStep'
+        ? `${uiIconSvg('toolkit', 14)}<span>Wicked Toolkit</span>`
+        : `${uiIconSvg('align', 14)}<span>Team Alignment</span>`;
+
   const topVisual =
     phase === 'biasRadar'
-      ? `<div class="mini-speakers">
+      ? `${biasRadarSvg(session.biasSpotted)}
+         <div class="mini-speakers">
           ${episode.briefing.stakeholders
             .map(
               (st) => `
             <div class="mini-speaker">
-              <div class="stakeholder-avatar">${avatarSvg(st.avatar)}</div>
-              <span>${st.name.split(' ')[0]}</span>
-              <span style="font-size:0.62rem; color:var(--text-secondary);">${st.mood}</span>
+              <div class="stakeholder-avatar">${avatarSvg(st.avatar, st.mood)}</div>
+              <span class="mini-speaker-name">${st.name.split(' ')[0]}</span>
+              <span class="mini-speaker-mood">${st.mood}</span>
             </div>`
             )
             .join('')}
@@ -438,21 +698,26 @@ function renderEpisode() {
 
   mainStage.innerHTML = `
     ${renderPhasePills(phase)}
-    ${renderMetersHtml(meters)}
+    ${renderMetersHtml(meters, prevMeters, lastDelta)}
     ${topVisual}
 
     <div class="story-card animate-in">
-      <span class="eyebrow">${phase === 'biasRadar' ? '🔍 Bias Radar' : phase === 'wickedStep' ? '🛠️ Wicked Toolkit' : '🤝 Team Alignment'}</span>
-      <p style="font-weight:700; font-size:0.9rem; color:var(--bg-indigo);">${stepData.prompt}</p>
+      <span class="eyebrow">${phaseEyebrow}</span>
+      <p class="story-prompt">${stepData.prompt}</p>
     </div>
 
     ${
       feedback
         ? `
       <div class="hornbill-tip ${feedback.positive ? 'wicked-hit' : 'trap-hit'} animate-in">
-        <div class="hornbill-tip-icon">${hornbillSvg(36)}</div>
-        <div class="hornbill-tip-body">
-          <strong>Bujang:</strong> ${feedback.text}
+        <div class="hornbill-tip-icon">${hornbillSvg(44, feedback.positive ? 'celebrate' : 'alert')}</div>
+        <div class="hornbill-tip-content">
+          <span class="outcome-pill ${feedback.positive ? 'pos' : 'neg'}">
+            ${uiIconSvg(feedback.positive ? 'check' : 'alert', 12)}
+            <span>${feedback.positive ? 'Breakthrough' : 'Bias Trap'}</span>
+          </span>
+          ${session.lastChoiceTitle ? `<div class="selected-recap">${session.lastChoiceTitle}</div>` : ''}
+          <div class="hornbill-tip-body"><strong>Bujang:</strong> ${feedback.text}</div>
         </div>
       </div>
       <div class="choices-stack">
@@ -471,7 +736,7 @@ function renderEpisode() {
             <span class="choice-sub">${opt.sub}</span>
             ${
               opt.chips
-                ? `<div class="chip-row">${opt.chips.map((c) => `<span class="tradeoff-chip">${c}</span>`).join('')}</div>`
+                ? `<div class="chip-row">${opt.chips.map((c) => `<span class="tradeoff-chip ${classifyChip(c)}">${c}</span>`).join('')}</div>`
                 : ''
             }
           </button>`
@@ -481,10 +746,17 @@ function renderEpisode() {
     }
   `;
 
+  if (lastDelta) {
+    animateMeters();
+  }
+
   if (feedback) {
     document.getElementById('btnNextPhase').addEventListener('click', () => {
       playSfx('tap', progress.muted);
       session.feedback = null;
+      session.lastDelta = null;
+      session.lastChoiceTitle = '';
+      session.prevMeters = { ...session.meters };
       session.phase =
         phase === 'biasRadar'
           ? 'wickedStep'
@@ -492,6 +764,7 @@ function renderEpisode() {
             ? 'alignmentStep'
             : 'debrief';
       renderEpisode();
+      scrollStageTop();
     });
   } else {
     mainStage.querySelectorAll('[data-opt]').forEach((btn) => {
@@ -502,11 +775,20 @@ function renderEpisode() {
         if (phase === 'wickedStep' && opt.isWicked) session.sceneResolved = true;
         if (phase === 'alignmentStep' && opt.isAligned) session.teamAligned = true;
 
-        session.meters = {
+        const nextMeters = {
           alignment: clampMeter(session.meters.alignment + (opt.delta?.alignment || 0)),
           trust: clampMeter(session.meters.trust + (opt.delta?.trust || 0)),
           impact: clampMeter(session.meters.impact + (opt.delta?.impact || 0)),
         };
+
+        session.prevMeters = { ...session.meters };
+        session.lastDelta = {
+          alignment: nextMeters.alignment - session.meters.alignment,
+          trust: nextMeters.trust - session.meters.trust,
+          impact: nextMeters.impact - session.meters.impact,
+        };
+        session.meters = nextMeters;
+        session.lastChoiceTitle = opt.title;
         session.feedback = { positive, text: opt.feedback };
         playSfx(positive ? 'sape' : 'trap', progress.muted);
         renderEpisode();
