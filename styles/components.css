@@ -1,0 +1,623 @@
+/* Hero & Home Screen */
+.hero-card {
+  background: linear-gradient(155deg, var(--bg-indigo) 0%, #273e69 100%);
+  color: var(--text-light);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px;
+  box-shadow: var(--shadow-float);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(217, 164, 65, 0.4);
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hero-mascot {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  background: rgba(250, 243, 224, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--accent-gold);
+}
+
+.hero-title {
+  font-size: 1.4rem;
+  color: var(--accent-gold-soft);
+}
+
+.hero-subtitle {
+  margin-top: 3px;
+  font-size: 0.84rem;
+  color: var(--text-muted-light);
+}
+
+.rank-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  background: rgba(217, 164, 65, 0.18);
+  border: 1px solid var(--accent-gold);
+  color: var(--accent-gold-soft);
+  padding: 4px 11px;
+  border-radius: var(--radius-pill);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+/* Collectible Terabai Badges */
+.badge-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface-card);
+  border: 1.5px solid var(--border-warm);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  box-shadow: var(--shadow-card);
+}
+
+.badge-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+/* Episode List Cards */
+.episode-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.episode-card {
+  background: var(--surface-card);
+  border: 1.5px solid var(--border-warm);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  transition: transform 0.12s ease, border-color 0.15s ease;
+}
+
+.episode-card:hover {
+  border-color: var(--accent-gold);
+}
+
+.episode-card:active {
+  transform: scale(0.985);
+}
+
+.episode-card.completed {
+  border-left: 5px solid var(--accent-emerald);
+}
+
+.episode-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.episode-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-emerald);
+}
+
+.episode-name {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--bg-indigo);
+}
+
+.episode-bias {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.episode-badge {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--surface-muted);
+  color: var(--bg-indigo);
+}
+
+.episode-card.completed .episode-badge {
+  background: #d8f3dc;
+  color: var(--accent-emerald);
+}
+
+/* Reactive Scene Stage */
+.scene-stage {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1.5px solid var(--border-warm);
+  box-shadow: var(--shadow-card);
+  background: var(--bg-indigo);
+  position: relative;
+}
+
+.scene-stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.scene-caption {
+  background: var(--bg-indigo);
+  color: var(--accent-gold-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 6px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Live Compass Meters */
+.meters-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: var(--surface-card);
+  border: 1.5px solid var(--border-warm);
+  border-radius: var(--radius-md);
+  padding: 9px 10px;
+  box-shadow: var(--shadow-card);
+}
+
+.meter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meter-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.meter-track {
+  height: 7px;
+  background: var(--surface-muted);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width 0.35s ease;
+}
+
+.meter-fill.alignment { background: var(--accent-gold); }
+.meter-fill.trust { background: var(--accent-river); }
+.meter-fill.impact { background: var(--accent-emerald); }
+
+/* Phase Stepper */
+.phase-pills {
+  display: flex;
+  gap: 5px;
+}
+
+.phase-pill {
+  flex: 1;
+  text-align: center;
+  font-size: 0.66rem;
+  font-weight: 800;
+  padding: 5px 4px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.phase-pill.active {
+  background: var(--bg-indigo);
+  color: var(--accent-gold-soft);
+}
+
+.phase-pill.done {
+  background: #d8f3dc;
+  color: var(--accent-emerald);
+}
+
+/* Comic Speech-Bubble Huddle */
+.comic-bubble-card {
+  background: var(--surface-card);
+  border: 1.5px solid var(--border-warm);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.speaker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.speaker-id {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stakeholder-avatar {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--accent-gold);
+  background: #fff;
+}
+
+.mood-chip {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-parchment);
+  border: 1px solid var(--border-warm);
+  color: var(--bg-indigo);
+}
+
+.speech-bubble {
+  position: relative;
+  background: var(--surface-parchment);
+  border: 1.5px solid var(--border-warm);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.42;
+  color: var(--text-primary);
+}
+
+.speaker-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.speaker-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.speaker-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-warm);
+}
+
+.speaker-dot.active {
+  width: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-terracotta);
+}
+
+/* Mini Speaker Strip for Bias Radar */
+.mini-speakers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.mini-speaker {
+  background: var(--surface-card);
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 3px;
+}
+
+.mini-speaker .stakeholder-avatar {
+  width: 34px;
+  height: 34px;
+}
+
+.mini-speaker span {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--bg-indigo);
+}
+
+/* Tension Ring Box */
+.tension-ring-box {
+  background: var(--surface-card);
+  border: 1.5px solid var(--border-warm);
+  border-radius: var(--radius-md);
+  padding: 6px 8px;
+  box-shadow: var(--shadow-card);
+}
+
+/* Story & Interactive Tool Cards */
+.story-card {
+  background: var(--surface-card);
+  border: 1.5px solid var(--border-warm);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.choices-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: auto;
+}
+
+.choice-btn {
+  width: 100%;
+  text-align: left;
+  background: var(--surface-card);
+  border: 1.5px solid var(--border-warm);
+  border-radius: var(--radius-md);
+  padding: 12px 13px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  box-shadow: 0 3px 10px rgba(27, 42, 74, 0.07);
+  transition: transform 0.1s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.choice-btn:hover {
+  border-color: var(--bg-indigo);
+  background: #fff9ec;
+}
+
+.choice-btn:active {
+  transform: scale(0.985);
+}
+
+.choice-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.choice-icon {
+  font-size: 1.15rem;
+}
+
+.choice-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--bg-indigo);
+}
+
+.choice-sub {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tradeoff-chip {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-parchment);
+  border: 1px solid var(--border-warm);
+  color: var(--bg-indigo);
+}
+
+/* Bujang Hornbill Feedback Banner */
+.hornbill-tip {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #fff8e6;
+  border: 1.5px solid var(--accent-gold);
+  border-radius: var(--radius-md);
+  padding: 11px 12px;
+}
+
+.hornbill-tip.trap-hit {
+  background: #fdeceb;
+  border-color: var(--accent-terracotta);
+}
+
+.hornbill-tip.wicked-hit {
+  background: #e9f7ef;
+  border-color: var(--accent-emerald);
+}
+
+.hornbill-tip-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.hornbill-tip-body {
+  font-size: 0.85rem;
+  line-height: 1.42;
+}
+
+/* Infographic Debrief Card */
+.debrief-box {
+  background: var(--bg-indigo);
+  color: var(--text-light);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  border: 2px solid var(--accent-gold);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.debrief-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+
+.debrief-takeaway {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 0.84rem;
+  line-height: 1.42;
+}
+
+/* Modal / Kamus Drawer */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 18, 34, 0.68);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+  padding: 12px;
+}
+
+.modal-sheet {
+  width: 100%;
+  max-width: 440px;
+  max-height: 82dvh;
+  background: var(--surface-card);
+  border-radius: 22px 22px 16px 16px;
+  padding: 18px 16px;
+  overflow-y: auto;
+  box-shadow: var(--shadow-float);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-warm);
+  padding-bottom: 10px;
+}
+
+.kamus-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.kamus-tab {
+  flex: 1;
+  padding: 7px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-warm);
+  background: var(--surface-parchment);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kamus-tab.active {
+  background: var(--bg-indigo);
+  color: var(--text-light);
+  border-color: var(--bg-indigo);
+}
+
+.kamus-entry {
+  background: var(--surface-parchment);
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-md);
+  padding: 11px 12px;
+}
+
+.kamus-entry h4 {
+  margin: 0 0 4px;
+  font-size: 0.92rem;
+  color: var(--bg-indigo);
+}
+
+.kamus-entry p {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+}
+
+/* Welcome / How to Play Steps */
+.intro-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.intro-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-parchment);
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 0.84rem;
+}
+
+.intro-step span {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.intro-num {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--bg-indigo);
+  color: var(--accent-gold-soft) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8rem !important;
+}
